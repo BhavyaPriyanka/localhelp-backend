@@ -17,7 +17,10 @@ pipeline{
         {
 
             steps{
-                    sh 'mvn dependency:resolve'
+                    sh """
+                    mvn dependency:resolve
+                    ls -ltr
+                    """
             }
         }
              }
