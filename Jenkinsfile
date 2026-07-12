@@ -30,7 +30,7 @@ pipeline{
             }
         }
 
-       age('Get the version number')
+       stage('Get the version number')
         {
 
             steps{
