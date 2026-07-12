@@ -3,6 +3,11 @@ pipeline{
     agent{
         label 'AGENT-1'
     }
+
+    environment {
+        APP_VERSION = ""
+    }
+
     options{
         timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
@@ -30,12 +35,12 @@ pipeline{
 
             steps{
                     script{
-                            APP_VERSION = sh(
+                            env.APP_VERSION = sh(
                                 script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
                                 returnStdout: true
                             ).trim()
 
-                             echo "Application Version: ${APP_VERSION}"
+                             echo "Application Version: ${env.APP_VERSION}"
 
                     }
             }
