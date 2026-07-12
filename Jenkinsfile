@@ -12,6 +12,9 @@ pipeline{
         ansiColor('xterm')
     }
 
+    environment{
+        def pom = ''
+    }
     
 
     stages{
@@ -32,16 +35,24 @@ pipeline{
         {
 
             steps{
-                    script{
-                            def output = sh(
-                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                                returnStdout: true
-                            ).trim()
+                // Uisng mvn getting version number
+                    // script{
+                    //         def output = sh(
+                    //             script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                    //             returnStdout: true
+                    //         ).trim()
 
 
-                             echo "Application Version: ${output}"
+                    //          echo "Application Version: ${output}"
 
-                    }
+                    // }
+
+                    // using plugin getting version number
+
+                    script {
+                        pom = readMavenPom file: 'pom.xml'
+                        echo "Version using plugin = ${pom.version}"
+}
             }
         } 
 
