@@ -19,7 +19,8 @@ pipeline{
             steps{
                     sh """
                     mvn dependency:resolve
-                    ls -ltr
+                    ls -la ~/.m2
+                    ls -la ~/.m2/repository | head
                     """
             }
         }
