@@ -24,7 +24,7 @@ pipeline{
 
         always{
 
-                echo "Hello...check status below !!"
+                echo "==== POST SECTION ===== "
                 deleteDir()
 
             }
