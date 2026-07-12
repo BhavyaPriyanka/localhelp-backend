@@ -11,11 +11,11 @@ pipeline{
 
     stages{
 
-        stage('test')
+        stage('Install Dependencies')
         {
 
             steps{
-                    echo "testing"
+                    sh 'mvn dependency:resolve'
             }
         }
              }
