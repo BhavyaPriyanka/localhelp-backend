@@ -5,7 +5,7 @@ pipeline{
     }
 
     environment {
-        APP_VER = ""
+        APP_VERSION = ""
     }
 
     options{
@@ -34,34 +34,21 @@ pipeline{
         {
 
             steps{
-                   script {
-    String version = sh(
-        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-        returnStdout: true
-    ).trim()
+                    script{
+                            String version = sh(
+                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                                returnStdout: true
+                            ).trim()
 
-    echo "version=${version}"
+                            env.APP_VERSION = version
 
-    env.TEST = version.toString()
+                             echo "Application Version: ${env.APP_VERSION}"
 
-    echo "env.TEST=${env.TEST}"
-
-    sh 'echo TEST=$TEST'
-}
+                    }
             }
         } 
 
-    stage('Debug') {
-        steps {
-            script {
-                echo "Version from env = ${env.APP_VERSION}"
-
-                sh '''
-                echo "Shell sees APP_VERSION=$APP_VERSION"
-                '''
-            }
-        }
-}
+    
              }
 
     post{
