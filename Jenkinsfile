@@ -45,6 +45,18 @@ pipeline{
                     }
             }
         }
+
+    stage('Debug') {
+        steps {
+            script {
+                echo "Version from env = ${env.APP_VERSION}"
+
+                sh '''
+                echo "Shell sees APP_VERSION=$APP_VERSION"
+                '''
+            }
+        }
+}
              }
 
     post{
