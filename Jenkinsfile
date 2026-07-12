@@ -32,13 +32,19 @@ pipeline{
 
     stage('Get Version') {
         steps {
-            sh '''
-            pwd
-            ls -la
-            mvn -version
-            cat pom.xml
-            mvn help:evaluate -Dexpression=project.version -DforceStdout
-            '''
+           script {
+
+    def output = sh(
+        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+        returnStdout: true
+    )
+
+    echo "Raw output: >>>${output}<<<"
+
+    env.APP_VERSION = output.trim()
+
+    echo "APP_VERSION: >>>${env.APP_VERSION}<<<"
+}
         }
 }
 
