@@ -35,14 +35,16 @@ pipeline{
 
             steps{
                     script{
-                            def version = sh(
+                            def output = sh(
                                 script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
                                 returnStdout: true
                             )
 
                                    
 
-                                    env.APP_VERSION = version.trim().toString()
+                                      String version = output.trim().toString()
+
+                                      env.APP_VERSION = version
 
                              echo "Application Version: ${env.APP_VERSION}"
 
