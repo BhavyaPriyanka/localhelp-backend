@@ -30,21 +30,17 @@ pipeline{
             }
         }
 
-        stage('Get the version number')
-        {
-
-            steps{
-                    script{
-                            env.APP_VERSION = sh(
-                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                                returnStdout: true
-                            ).trim()
-
-                             echo "Application Version: ${env.APP_VERSION}"
-
-                    }
-            }
+    stage('Get Version') {
+        steps {
+            sh '''
+            pwd
+            ls -la
+            mvn -version
+            cat pom.xml
+            mvn help:evaluate -Dexpression=project.version -DforceStdout
+            '''
         }
+}
 
     stage('Debug') {
         steps {
