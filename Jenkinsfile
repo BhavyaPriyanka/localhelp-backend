@@ -20,8 +20,24 @@ pipeline{
                     sh """
                     mvn dependency:resolve
                     ls -la ~/.m2
-                    ls -la ~/.m2/repository | head
+                    
                     """
+            }
+        }
+
+        stage('Get the version number')
+        {
+
+            steps{
+                    script{
+                            APP_VERSION = sh(
+                                script: "mvn help:evaluate - Dexpression=project.version -q -DforceStdout",
+                                returnStdout: true
+                            ).trim()
+
+                             echo "Application Version: ${APP_VERSION}"
+
+                    }
             }
         }
              }
