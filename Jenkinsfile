@@ -63,7 +63,7 @@ pipeline{
 
                 sh """
                     echo "====== ZIPPING THE CODE + DEPENDENCIES ========"
-            zip -r localhelp-backend-${version}.zip * -x Jenkinsfile -x localhelp-backend-${version}.zip
+            zip -q -r localhelp-backend-${version}.zip * -x Jenkinsfile -x localhelp-backend-${version}.zip
             ls -ltr
                 """
             }
