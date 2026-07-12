@@ -44,6 +44,9 @@ pipeline{
     env.APP_VERSION = output.trim()
 
     echo "APP_VERSION: >>>${env.APP_VERSION}<<<"
+
+    env.NAME = "ABC123"
+    echo "NAME = ${env.NAME}"
 }
         }
 }
