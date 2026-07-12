@@ -14,6 +14,7 @@ pipeline{
 
     environment{
         def pom = ''
+        def version = ''
     }
     
 
@@ -51,11 +52,22 @@ pipeline{
 
                     script {
                         pom = readMavenPom file: 'pom.xml'
+                        version = pom.version
                         echo "Version using plugin = ${pom.version}"
 }
             }
         } 
 
+        stage('Build'){
+            steps{
+
+                sh """
+                    echo "====== ZIPPING THE CODE + DEPENDENCIES ========"
+            zip -r localhelp-backend-${version}.zip * -x Jenkinsfile -x localhelp-backend-${version}.zip
+            ls -ltr
+                """
+            }
+        }
     
              }
 
