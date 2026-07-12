@@ -5,7 +5,7 @@ pipeline{
     }
 
     environment {
-        APP_VERSION = ""
+        APP_VER = ""
     }
 
     options{
@@ -30,26 +30,21 @@ pipeline{
             }
         }
 
-    stage('Get Version') {
-        steps {
-           script {
+       age('Get the version number')
+        {
 
-    def output = sh(
-        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-        returnStdout: true
-    )
+            steps{
+                    script{
+                            env.APP_VER = sh(
+                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                                returnStdout: true
+                            ).trim()
 
-    echo "Raw output: >>>${output}<<<"
+                             echo "Application Version: ${env.APP_VER}"
 
-    env.APP_VERSION = output.trim()
-
-    echo "APP_VERSION: >>>${env.APP_VERSION}<<<"
-
-    env.NAME = "ABC123"
-    echo "NAME = ${env.NAME}"
-}
-        }
-}
+                    }
+            }
+        } st
 
     stage('Debug') {
         steps {
