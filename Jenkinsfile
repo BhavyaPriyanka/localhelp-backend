@@ -4,9 +4,7 @@ pipeline{
         label 'AGENT-1'
     }
 
-    environment {
-        APP_VERSION = ""
-    }
+   
 
     options{
         timeout(time: 30, unit: 'MINUTES')
@@ -38,15 +36,10 @@ pipeline{
                             def output = sh(
                                 script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
                                 returnStdout: true
-                            )
+                            ).trim()
 
-                                   
 
-                                      String version = output.trim().toString()
-
-                                      env.APP_VERSION = version
-
-                             echo "Application Version: ${env.APP_VERSION}"
+                             echo "Application Version: ${output}"
 
                     }
             }
