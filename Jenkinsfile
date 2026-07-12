@@ -44,7 +44,7 @@ pipeline{
 
                     }
             }
-        } st
+        } 
 
     stage('Debug') {
         steps {
