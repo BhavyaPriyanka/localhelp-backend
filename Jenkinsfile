@@ -34,15 +34,20 @@ pipeline{
         {
 
             steps{
-                    script{
-                            env.APP_VER = sh(
-                                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                                returnStdout: true
-                            ).trim()
+                   script {
+    String version = sh(
+        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+        returnStdout: true
+    ).trim()
 
-                             echo "Application Version: ${env.APP_VER}"
+    echo "version=${version}"
 
-                    }
+    env.TEST = version.toString()
+
+    echo "env.TEST=${env.TEST}"
+
+    sh 'echo TEST=$TEST'
+}
             }
         } 
 
