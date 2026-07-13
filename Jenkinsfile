@@ -85,6 +85,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Trigger Deploy Job'){
+            steps{
+                build(
+                    job: 'BACKEND-DEPLOY',
+                    parameters: [
+                        string(name: 'VERSION', value: '${version}', wait: false)
+                    ]
+                )
+
+            }
+        }
     }
 
     post {
