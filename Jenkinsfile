@@ -91,7 +91,7 @@ pipeline {
                 build(
                     job: 'BACKEND-DEPLOY',
                     parameters: [
-                        string(name: 'VERSION', value: '${version}', wait: false)
+                        string(name: 'VERSION', value: ${version}, wait: false)
                     ]
                 )
 
