@@ -90,8 +90,9 @@ pipeline {
             steps{
                 build(
                     job: 'BACKEND-DEPLOY',
+                    wait: false
                     parameters: [
-                        string(name: 'VERSION', value: ${version}, wait: false)
+                        string(name: 'VERSION', value: version)
                     ]
                 )
 
