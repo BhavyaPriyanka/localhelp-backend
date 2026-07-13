@@ -1,97 +1,105 @@
-pipeline{
+def pom
+def version
+def artifactId
+def groupId
 
-    agent{
+pipeline {
+
+    agent {
         label 'AGENT-1'
     }
 
-   
-
-    options{
+    options {
         timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
         ansiColor('xterm')
     }
 
-    environment{
-        def pom = ''
-        def version = ''
+    environment {
+        nexusUrl = 'nexus.localhelp.store:8081'
     }
-    
 
-    stages{
+    stages {
 
-        stage('Install Dependencies')
-        {
-
-            steps{
-                    sh """
+        stage('Install Dependencies') {
+            steps {
+                sh '''
                     mvn dependency:resolve
                     ls -la ~/.m2
-                    
-                    """
+                '''
             }
         }
 
-       stage('Get the version number')
-        {
+        stage('Read Maven Information') {
+            steps {
+                script {
+                    pom = readMavenPom file: 'pom.xml'
 
-            steps{
-                // Uisng mvn getting version number
-                    // script{
-                    //         def output = sh(
-                    //             script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                    //             returnStdout: true
-                    //         ).trim()
+                    version = pom.version
+                    artifactId = pom.artifactId
+                    groupId = pom.groupId
 
-
-                    //          echo "Application Version: ${output}"
-
-                    // }
-
-                    // using plugin getting version number
-
-                    script {
-                        pom = readMavenPom file: 'pom.xml'
-                        version = pom.version
-                        echo "Version using plugin = ${pom.version}"
-}
-            }
-        } 
-
-        stage('Build'){
-            steps{
-
-                sh """
-                    echo "====== ZIPPING THE CODE + DEPENDENCIES ========"
-            zip -q -r localhelp-backend-${version}.zip * -x Jenkinsfile -x localhelp-backend-${version}.zip
-            ls -ltr
-                """
+                    echo "Group Id    : ${groupId}"
+                    echo "Artifact Id : ${artifactId}"
+                    echo "Version     : ${version}"
+                }
             }
         }
-    
-             }
 
-    post{
+        stage('Build') {
+            steps {
+                sh '''
+                    echo "===== BUILDING APPLICATION ====="
+                    mvn clean package -DskipTests
 
-        always{
-
-                echo "==== POST SECTION ===== "
-                deleteDir()
-
+                    echo "===== GENERATED ARTIFACT ====="
+                    ls -ltr target
+                '''
             }
+        }
 
-            success{
+        stage('Upload Artifact to Nexus') {
+            steps {
+                script {
 
-                echo "PIPELINE SUCCESSFULL.."
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: nexusUrl,
+                        repository: 'backend',
+                        credentialsId: 'nexus-auth',
+
+                        groupId: groupId,
+                        version: version,
+
+                        artifacts: [
+                            [
+                                artifactId: artifactId,
+                                classifier: '',
+                                file: "target/${artifactId}-${version}.jar",
+                                type: 'jar'
+                            ]
+                        ]
+                    )
+
+                }
             }
-
-            failure{
-
-                echo "PIPELINE FAILURE.."
-            }
-
-
+        }
     }
 
+    post {
 
+        always {
+            echo "===== CLEANING WORKSPACE ====="
+            deleteDir()
+        }
+
+        success {
+            echo "Pipeline completed successfully."
+        }
+
+        failure {
+            echo "Pipeline failed."
+        }
+    }
 }
