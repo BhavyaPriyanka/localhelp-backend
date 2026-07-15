@@ -58,6 +58,25 @@ pipeline {
             }
         }
 
+
+        stage('Test Nexus Credential') {
+                steps {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'nexus-auth',
+                            usernameVariable: 'USER',
+                            passwordVariable: 'PASS'
+                        )
+                    ]) {
+                        sh '''
+                            echo "Nexus User: $USER"
+
+                            curl -v -u "$USER:$PASS" \
+                            http://nexus.localhelp.store:8081/service/rest/v1/status
+                        '''
+                    }
+                }
+            }
         stage('Upload Artifact to Nexus') {
             steps {
                 script {
