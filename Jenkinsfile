@@ -108,7 +108,7 @@ pipeline {
         stage('Trigger Deploy Job'){
             steps{
                 build(
-                    job: 'BACKEND-DEPLOY',
+                    job: 'backend-deploy',
                     wait: false,
                     parameters: [
                         string(name: 'VERSION', value: version)
