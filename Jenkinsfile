@@ -97,6 +97,12 @@ pipeline {
                                 classifier: '',
                                 file: "target/${artifactId}-${version}.jar",
                                 type: 'jar'
+                            ],
+                            [
+                                artifactId: artifactId,
+                                classifier: 'db',
+                                file: "db/init.sql",
+                                type: 'sql'
                             ]
                         ]
                     )
