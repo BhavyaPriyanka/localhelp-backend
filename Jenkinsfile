@@ -30,21 +30,37 @@ pipeline {
             }
         }
 
-        stage('Read Maven Information') {
-            steps {
-                script {
-                    pom = readMavenPom file: 'pom.xml'
+       stage('Read Maven Information') {
 
-                    version = pom.version
-                    artifactId = pom.artifactId
-                    groupId = pom.groupId
+    steps {
 
-                    echo "Group Id    : ${groupId}"
-                    echo "Artifact Id : ${artifactId}"
-                    echo "Version     : ${version}"
-                }
-            }
+        script {
+
+            version = sh(
+                script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
+                returnStdout: true
+            ).trim()
+
+
+            artifactId = sh(
+                script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout",
+                returnStdout: true
+            ).trim()
+
+
+            groupId = sh(
+                script: "mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout",
+                returnStdout: true
+            ).trim()
+
+
+            echo "Group Id    : ${groupId}"
+            echo "Artifact Id : ${artifactId}"
+            echo "Version     : ${version}"
+
         }
+    }
+}
 
         stage('Build') {
             steps {
