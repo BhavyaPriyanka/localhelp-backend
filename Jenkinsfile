@@ -58,6 +58,31 @@ pipeline {
             }
         }
 
+        stage('SonarQube Analysis') {
+
+    steps {
+
+        script {
+
+            withSonarQubeEnv('sonarqube') {
+
+                sh """
+                    echo "===== SONARQUBE ANALYSIS ====="
+
+                    mvn sonar:sonar \
+                    -Dsonar.projectKey=${artifactId} \
+                    -Dsonar.projectName=${artifactId} \
+                    -Dsonar.host.url=http://sonar.localhelp.store:9000
+
+                """
+
+            }
+
+        }
+
+    }
+}
+
 
         stage('Test Nexus Credential') {
                 steps {
