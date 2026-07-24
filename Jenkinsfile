@@ -74,6 +74,7 @@ pipeline {
             }
         }
 
+           
         stage('SonarQube Analysis') {
 
     steps {
@@ -114,6 +115,20 @@ pipeline {
                 }
             }
         }
+
+         stage('Dependency Scan') {
+                steps {
+                    sh '''
+                   trivy fs \
+                    --scanners vuln \
+                    --severity HIGH,CRITICAL \
+                    --exit-code 1 \
+                    --skip-dirs target \
+                    .
+                                        
+                    '''
+                }
+            }
 
 
         stage('Test Nexus Credential') {
@@ -185,6 +200,7 @@ pipeline {
     post {
 
         always {
+             
             echo "===== CLEANING WORKSPACE ====="
             deleteDir()
         }
