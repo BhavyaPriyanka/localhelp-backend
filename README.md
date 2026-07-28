@@ -1,143 +1,377 @@
-# LocalHelp Backend
+# LocalHelp Backend Documentation
 
-## 📌 Overview
+## Overview
 
-LocalHelp Backend is a Spring Boot application that provides REST APIs for managing help requests, medicines, and order processing.
+LocalHelp backend is a Spring Boot REST API application responsible for user authentication, medicine management, order processing, inventory updates, and order history.
 
-It acts as the business logic layer in the 3-tier architecture.
+## Technology
+
+- Java 17
+- Spring Boot
+- Spring Security
+- JWT Authentication
+- Hibernate JPA
+- Maven
+- MySQL
+
+
+# Database
+
+## Database Technology
+
+```
+MySQL
+```
+
+
+## Database Name
+
+```
+localhelp
+```
+
+
+# Database Tables
+
+
+## users Table
+
+Stores application users and roles.
+
+Columns:
+
+```
+id
+username
+password
+role
+enabled
+created_at
+updated_at
+```
+
+
+## medicine Table
+
+Stores medicine information and stock details.
+
+Columns:
+
+```
+id
+name
+price
+stock
+```
+
+
+## orders Table
+
+Stores customer order details.
+
+Columns:
+
+```
+id
+user_id
+total_amount
+status
+created_at
+```
+
+
+## order_items Table
+
+Stores medicines included in an order.
+
+Columns:
+
+```
+id
+order_id
+medicine_id
+quantity
+price
+```
+
 
 ---
 
-## 🚀 Features
+# Authentication
 
-* REST APIs for medicines and orders
-* Cart checkout and order creation
-* Stock management (auto deduction)
-* MySQL database integration
-* Backend validation
+
+## Login API
+
+```
+POST /auth/login
+```
+
+
+Functionality:
+
+- Validate username and password
+- Authenticate user
+- Generate JWT token
+- Return user details and token
+
+
+Request:
+
+```json
+{
+  "username":"user",
+  "password":"password"
+}
+```
+
+
+Response:
+
+```json
+{
+  "username":"user",
+  "role":"USER",
+  "token":"JWT_TOKEN"
+}
+```
+
 
 ---
 
-## 🛠️ Tech Stack
+# Medicine APIs
 
-* Java
-* Spring Boot
-* Spring Data JPA
-* MySQL
-* Maven
+
+## Get All Medicines
+
+```
+GET /medicines
+```
+
+
+Functionality:
+
+- Fetch all available medicines
+- Display medicine name
+- Display price
+- Display available stock
+
+
+Response:
+
+```json
+[
+ {
+  "id":1,
+  "name":"Paracetamol",
+  "price":20,
+  "stock":50
+ }
+]
+```
+
 
 ---
 
-## 📂 Project Structure
+# Order APIs
+
+
+## Create Order
 
 ```
-src/main/java/
- ├── controller/
- ├── service/
- ├── repository/
- ├── model/
+POST /orders
 ```
+
+
+Headers:
+
+```
+Authorization: Bearer JWT_TOKEN
+```
+
+
+Functionality:
+
+1. Get logged-in user from JWT token
+2. Validate medicine availability
+3. Check available stock
+4. Reduce medicine stock
+5. Create order record
+6. Create order item records
+
+
+Request:
+
+```json
+{
+ "items":[
+  {
+   "medicineId":2,
+   "quantity":2
+  }
+ ]
+}
+```
+
+
+Response:
+
+```json
+{
+ "orderId":9,
+ "totalAmount":70,
+ "message":"ORDER PLACED SUCCESSFULLY"
+}
+```
+
 
 ---
 
-## ⚙️ Setup Instructions
-
-### 1. Clone the repo
+## Get User Order History
 
 ```
-git clone https://github.com/sbp828/localhelp-backend.git
-cd localhelp-backend
+GET /orders/my-orders
 ```
 
-### 2. Configure Database
 
-Update `application.properties`:
+Headers:
 
 ```
-spring.datasource.url=jdbc:mysql://localhost:3306/appdb
-spring.datasource.username=YOUR_USERNAME
-spring.datasource.password=YOUR_PASSWORD
+Authorization: Bearer JWT_TOKEN
 ```
+
+
+Functionality:
+
+- Identify logged-in user
+- Fetch user's orders
+- Fetch order items
+- Return complete order details
+
+
+Response:
+
+```json
+[
+ {
+  "orderId":9,
+  "totalAmount":70,
+  "items":[
+   {
+    "medicineName":"Dolo 650",
+    "quantity":2,
+    "price":35
+   }
+  ]
+ }
+]
+```
+
 
 ---
 
-### 3. Run the application
+# Order Processing Flow
+
 
 ```
-mvn spring-boot:run
+User Request
+
+      |
+
+JWT Authentication
+
+      |
+
+Controller Layer
+
+      |
+
+Service Layer
+
+      |
+
+Repository Layer
+
+      |
+
+MySQL Database
 ```
 
-Server runs at:
-
-```
-http://localhost:8080
-```
 
 ---
 
-## 🔗 API Endpoints (Sample)
-```
-Check health of backend: http://backend.localhelp.store:8080/health
-```
-<img width="1358" height="453" alt="image" src="https://github.com/user-attachments/assets/f53da1de-6b5a-4aa1-a722-c3cf5b7887ba" />
+# Inventory Management Flow
 
 
-### Get Medicines
+Before Order:
 
 ```
-GET /medicines : http://backend.localhelp.store:8080/medicines
-```
-<img width="1328" height="688" alt="image" src="https://github.com/user-attachments/assets/859b722d-ceef-4c59-93be-51bfafb6a51e" />
+Medicine: Dolo 650
 
-### Place Order
+Stock = 100
+```
+
+
+Customer places order:
 
 ```
-POST /orders : http://backend.localhelp.store:8080/orders
+Quantity = 2
 ```
-<img width="1146" height="454" alt="image" src="https://github.com/user-attachments/assets/edac294a-5be1-4e4e-996c-d835652d24ee" />
+
+
+After Order:
+
+```
+Medicine: Dolo 650
+
+Stock = 98
+```
+
+
+Stock is automatically reduced during successful order creation.
+
 
 ---
 
-## 🗄️ Database Tables
+# Entity Relationship
 
-* medicines
-* orders
-* order_items
-  
-# tables:
 
-<img width="283" height="194" alt="image" src="https://github.com/user-attachments/assets/10941c05-9244-43fa-80aa-7d391a95d4b6" />
+```
+User
 
-# medicines:
+ |
+ |
+One User
 
-<img width="666" height="550" alt="image" src="https://github.com/user-attachments/assets/37bd0fe2-a529-4896-b6ca-190339688ca9" />
+ |
+ |
+Many Orders
 
-# orders:
 
-<img width="352" height="229" alt="image" src="https://github.com/user-attachments/assets/3feae275-de91-4eb6-99a2-1cae78a206a4" />
+Order
 
-# order_items:
+ |
+ |
+Many Order Items
 
-<img width="592" height="269" alt="image" src="https://github.com/user-attachments/assets/78459e11-ee0e-47fd-a1fc-cf75a418d481" />
 
----
+Order Item
 
-## 🔗 Frontend Integration
+ |
+ |
+Medicine
+```
 
-👉 Frontend Repo:
-https://github.com/sbp828/localhelp-frontend
-
----
-
-## 📌 Future Enhancements
-
-* JWT Authentication
-* Role-based access
-* Request acceptance workflow
-* Logging & monitoring
 
 ---
 
-## 👨‍💻 Author
+# Current Completed Backend Features
 
-Developed as part of a DevSecOps learning project.
+- User authentication
+- JWT based security
+- Role based users
+- Medicine management
+- Order creation
+- Stock reduction
+- Order history
+- MySQL database integration
+- REST API implementation
