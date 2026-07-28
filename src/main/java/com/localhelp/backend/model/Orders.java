@@ -15,5 +15,16 @@ public class Orders {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     private Double totalAmount;
+
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+
+    @Column(nullable = false)
+    private String status = "PLACED";
+
 }
