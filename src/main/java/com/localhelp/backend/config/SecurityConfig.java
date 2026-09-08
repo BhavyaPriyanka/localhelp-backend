@@ -86,7 +86,8 @@ CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
     configuration.setAllowedOrigins(
-            List.of("https://localhelp-dev.localhelp.store")
+            List.of("https://localhelp-dev.localhelp.store",
+            "http://localhost:80")
     );
 
     configuration.setAllowedMethods(
