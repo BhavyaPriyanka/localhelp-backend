@@ -58,7 +58,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
             // Public authentication APIs
-            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/auth/**", "/api/auth/**").permitAll()
 
             // Everything else requires JWT
             .anyRequest().authenticated()
