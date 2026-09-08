@@ -18,6 +18,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.http.HttpStatus;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpMethod;
 
 @EnableMethodSecurity
 @Configuration
@@ -29,12 +30,15 @@ public class SecurityConfig {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
 }
 
-    @Bean
+
+
+@Bean
 SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
     http
-    .cors(cors -> {})
-    .csrf(csrf -> csrf.disable())
+        .cors(cors -> {})
+        .csrf(csrf -> csrf.disable())
+
         .exceptionHandling(exception -> exception
             .authenticationEntryPoint((request, response, authException) -> {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -48,13 +52,22 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
                     """);
             })
         )
+
         .authorizeHttpRequests(auth -> auth
+            // Allow browser CORS preflight
+            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+            // Public authentication APIs
             .requestMatchers("/auth/**").permitAll()
+
+            // Everything else requires JWT
             .anyRequest().authenticated()
         )
+
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
+
         .addFilterBefore(
             jwtAuthenticationFilter,
             UsernamePasswordAuthenticationFilter.class
@@ -73,7 +86,7 @@ CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
     configuration.setAllowedOrigins(
-            List.of("http://localhost:3000")
+            List.of("https://localhelp-dev.localhelp.store")
     );
 
     configuration.setAllowedMethods(
