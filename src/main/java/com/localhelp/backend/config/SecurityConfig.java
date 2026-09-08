@@ -49,7 +49,7 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
             })
         )
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/auth/**").permitAll()
             .anyRequest().authenticated()
         )
         .sessionManagement(session ->
