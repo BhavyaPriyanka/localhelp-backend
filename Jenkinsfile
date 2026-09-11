@@ -183,6 +183,27 @@ pipeline {
             }
         }
 
+                stage('Upload Artifact to S3') {
+                    steps {
+                        sh """
+                            echo "===== UPLOADING ARTIFACTS TO S3 ====="
+
+                            aws s3 cp \
+                                target/${artifactId}-${version}.jar \
+                                s3://localhelp-backend-artifacts/backend/${version}/${artifactId}-${version}.jar
+
+                            aws s3 cp \
+                                db/init.sql \
+                                s3://localhelp-backend-artifacts/backend/${version}/init.sql
+
+                            echo "===== S3 UPLOAD COMPLETED ====="
+
+                            echo "===== S3 ARTIFACTS ====="
+                            aws s3 ls s3://localhelp-backend-artifacts/backend/${version}/
+                        """
+                    }
+        }
+
         stage('Trigger Deploy Job'){
             steps{
                 build(
