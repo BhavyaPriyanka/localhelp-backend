@@ -29,6 +29,8 @@ spec:
         project: localhelp
      
     spec:
+      nodeSelector:
+        workload: backend
       containers:
        - name: backend
          image: {{ .Values.deployment.image }}:{{ .Values.deployment.imageVersion }}
