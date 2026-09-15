@@ -53,7 +53,7 @@ pipeline {
             steps {
                 sh '''
                     echo "===== BUILDING APPLICATION ====="
-                    mvn clean package -DskipTests
+                    mvn -q clean package -DskipTests
 
                     echo "===== GENERATED ARTIFACT ====="
                     ls -ltr target
