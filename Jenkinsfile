@@ -88,45 +88,78 @@ pipeline {
         }
 
 
-        stage('Deploy to K8'){
-            steps{
-                sh """
-                echo "========= Authenticate to K8 ============"
-                aws eks update-kubeconfig --region us-east-1  --name localhelp-dev
+        stage('Deploy to K8') {
+    steps {
+        sh """
+            set -e
 
-                export KUBECONFIG=/home/ec2-user/.kube/config
+            echo "========= Authenticate to K8 ============"
 
-                 kubectl get nodes
+            aws eks update-kubeconfig \
+              --region us-east-1 \
+              --name localhelp-dev
 
-                echo "========= Deploy Backend using Helm ============"
+            export KUBECONFIG=/home/ec2-user/.kube/config
 
-                
-                 cd helm
+            echo "========= Check Kubernetes Nodes =========="
 
-                 sed -i 's/IMAGE_VERSION/${version}/g' values.yaml
+            kubectl get nodes
 
-                   echo "===== WHOAMI ====="
-                            whoami
+            echo "========= Deploy Backend using Helm =========="
 
-                            echo "===== HOST ====="
-                            hostname
+            cd helm
 
-                            echo "===== PATH ====="
-                            echo $PATH
+            sed -i 's/IMAGE_VERSION/${version}/g' values.yaml
 
-                            echo "===== HELM ====="
-                            which helm
-                            helm version
+           
 
-                 helm upgrade --install backend . --namespace localhelp --create-namespace
+            echo "========= Helm Upgrade / Install =========="
 
-                 echo "========== CHECK NAMESPACE AND PODS =========="
-                 kubectl get ns
+            helm upgrade --install backend . \
+              --namespace localhelp \
+              --create-namespace
 
-                 kubectl get pods -n localhelp
-                """
-            }
-        }
+            echo "========= Helm Release =========="
+
+            helm status backend \
+              --namespace localhelp
+
+            echo "========= CHECK NAMESPACE =========="
+
+            kubectl get ns
+
+            echo "========= CHECK DEPLOYMENT =========="
+
+            kubectl get deployment backend \
+              -n localhelp
+
+            echo "========= CHECK PODS =========="
+
+            kubectl get pods \
+              -n localhelp \
+              -o wide
+
+            echo "========= WAIT FOR ROLLOUT =========="
+
+            kubectl rollout status deployment/backend \
+              -n localhelp \
+              --timeout=180s
+
+            echo "========= FINAL POD STATUS =========="
+
+            kubectl get pods \
+              -n localhelp \
+              -o wide
+
+            echo "========= BACKEND SERVICE =========="
+
+            kubectl get svc backend \
+              -n localhelp
+
+            echo "========= DEPLOYMENT COMPLETE =========="
+        """
+    }
+}
 //         stage('SonarQube Analysis') {
 //     steps {
 //       script {

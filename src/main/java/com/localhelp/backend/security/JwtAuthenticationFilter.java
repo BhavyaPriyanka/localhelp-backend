@@ -34,6 +34,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
 
     private final UserRepository userRepository;
+ 
 
 
 
@@ -65,9 +66,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
 
-        String authHeader =
-                request.getHeader("Authorization");
+     
 
+        String authHeader = request.getHeader("Authorization");
+        System.out.println("AUTH HEADER = " + authHeader);
 
 
         String username = null;

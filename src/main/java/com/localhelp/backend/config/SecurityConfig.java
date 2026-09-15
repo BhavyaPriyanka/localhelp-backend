@@ -54,15 +54,21 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         )
 
         .authorizeHttpRequests(auth -> auth
-            // Allow browser CORS preflight
-            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+    // CORS preflight
+    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-            // Public authentication APIs
-            .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+    // PUBLIC
+  .requestMatchers(
+    "/",
+    "/error",
+    "/health",
+    "/auth/login",
+    "/auth/logout"
+).permitAll()
 
-            // Everything else requires JWT
-            .anyRequest().authenticated()
-        )
+    // EVERYTHING ELSE
+    .anyRequest().authenticated()
+)
 
         .sessionManagement(session ->
             session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
