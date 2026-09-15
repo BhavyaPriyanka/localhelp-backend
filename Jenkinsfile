@@ -4,7 +4,6 @@ def artifactId
 def groupId
 
 pipeline {
-
     agent {
         label 'AGENT-1'
     }
@@ -12,7 +11,6 @@ pipeline {
     options {
         timeout(time: 30, unit: 'MINUTES')
         disableConcurrentBuilds()
-       
     }
 
     environment {
@@ -20,7 +18,6 @@ pipeline {
     }
 
     stages {
-
         stage('Install Dependencies') {
             steps {
                 sh '''
@@ -31,33 +28,23 @@ pipeline {
         }
 
        stage('Read Maven Information') {
-
     steps {
-
         script {
-
             version = sh(
                 script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
                 returnStdout: true
             ).trim()
-
-
             artifactId = sh(
                 script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout",
                 returnStdout: true
             ).trim()
-
-
             groupId = sh(
                 script: "mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout",
                 returnStdout: true
             ).trim()
-
-
             echo "Group Id    : ${groupId}"
             echo "Artifact Id : ${artifactId}"
             echo "Version     : ${version}"
-
         }
     }
 }
@@ -74,12 +61,21 @@ pipeline {
             }
         }
 
-           
+        stage('Docker Build'){
+            steps{
+                sh """
+                     echo "===== BUILDING DOCKER IMAGE ====="
+
+                      docker build -t sbp828/backend:${version} 
+
+                      echo "===== DOCKER IMAGE CREATED ====="
+                         docker images | grep sbp828/backend
+                """
+            }
+        }
         stage('SonarQube Analysis') {
-
     steps {
-
-        script {
+      script {
 
             withSonarQubeEnv('sonarqube') {
 
