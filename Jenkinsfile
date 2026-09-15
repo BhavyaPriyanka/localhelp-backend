@@ -99,9 +99,24 @@ pipeline {
                  kubectl get nodes
 
                 echo "========= Deploy Backend using Helm ============"
+
+                
                  cd helm
 
                  sed -i 's/IMAGE_VERSION/${version}/g' values.yaml
+
+                   echo "===== WHOAMI ====="
+                            whoami
+
+                            echo "===== HOST ====="
+                            hostname
+
+                            echo "===== PATH ====="
+                            echo $PATH
+
+                            echo "===== HELM ====="
+                            which helm
+                            helm version
 
                  helm upgrade --install backend . --namespace localhelp --create-namespace
 
