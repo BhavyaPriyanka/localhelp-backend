@@ -1,0 +1,5 @@
+deployment:
+  replicas: 2
+  repository: 837206354502.dkr.ecr.us-east-1.amazonaws.com/backend
+  imageVersion: IMAGE_VERSION
+

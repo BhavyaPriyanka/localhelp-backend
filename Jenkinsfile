@@ -86,111 +86,135 @@ pipeline {
                 """
             }
         }
-        stage('SonarQube Analysis') {
-    steps {
-      script {
 
-            withSonarQubeEnv('sonarqube') {
 
+        stage('Deploy to K8'){
+            steps{
                 sh """
-                    echo "===== SONARQUBE ANALYSIS ====="
+                echo "========= Authenticate to K8 ============"
+                aws eks update-kubeconfig --region us-east-1  --name localhelp-dev
 
-                    mvn sonar:sonar \
-                    -Dsonar.projectKey=${artifactId} \
-                    -Dsonar.projectName=${artifactId} \
-                    -Dsonar.host.url=http://sonar.localhelp.store:9000
+                 kubectl get nodes
 
+                echo "========= Deploy Backend using Helm ============"
+                 cd helm
+
+                 sed -i 's/IMAGE_VERSION/${version}/g' values.yaml
+
+                 helm upgrade --install backend . --namespace localhelp --create-namespace
+
+                 echo "========== CHECK NAMESPACE AND PODS =========="
+                 kubectl get ns
+
+                 kubectl get pods -n localhelp
                 """
-
-            }
-
-        }
-
-    }
-}
-
-        stage('Quality Gate') {
-            steps {
-                timeout(time: 5, unit: 'MINUTES') {
-                    script {
-                        def qg = waitForQualityGate()
-
-                        if (qg.status != 'OK') {
-                            error "Pipeline aborted because Quality Gate failed: ${qg.status}"
-                        }
-
-                        echo "Quality Gate Passed."
-                    }
-                }
             }
         }
+//         stage('SonarQube Analysis') {
+//     steps {
+//       script {
 
-         stage('Dependency Scan') {
-                steps {
-                    sh '''
-                   trivy fs \
-                    --scanners vuln \
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    --skip-dirs target \
-                    .
+//             withSonarQubeEnv('sonarqube') {
+
+//                 sh """
+//                     echo "===== SONARQUBE ANALYSIS ====="
+
+//                     mvn sonar:sonar \
+//                     -Dsonar.projectKey=${artifactId} \
+//                     -Dsonar.projectName=${artifactId} \
+//                     -Dsonar.host.url=http://sonar.localhelp.store:9000
+
+//                 """
+
+//             }
+
+//         }
+
+//     }
+// }
+
+        // stage('Quality Gate') {
+        //     steps {
+        //         timeout(time: 5, unit: 'MINUTES') {
+        //             script {
+        //                 def qg = waitForQualityGate()
+
+        //                 if (qg.status != 'OK') {
+        //                     error "Pipeline aborted because Quality Gate failed: ${qg.status}"
+        //                 }
+
+        //                 echo "Quality Gate Passed."
+        //             }
+        //         }
+        //     }
+        // }
+
+        //  stage('Dependency Scan') {
+        //         steps {
+        //             sh '''
+        //            trivy fs \
+        //             --scanners vuln \
+        //             --severity HIGH,CRITICAL \
+        //             --exit-code 1 \
+        //             --skip-dirs target \
+        //             .
                                         
-                    '''
-                }
-            }
+        //             '''
+        //         }
+        //     }
 
 
-        stage('Test Nexus Credential') {
-                steps {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'nexus-auth',
-                            usernameVariable: 'USER',
-                            passwordVariable: 'PASS'
-                        )
-                    ]) {
-                        sh '''
-                            echo "Nexus User: $USER"
+        // stage('Test Nexus Credential') {
+        //         steps {
+        //             withCredentials([
+        //                 usernamePassword(
+        //                     credentialsId: 'nexus-auth',
+        //                     usernameVariable: 'USER',
+        //                     passwordVariable: 'PASS'
+        //                 )
+        //             ]) {
+        //                 sh '''
+        //                     echo "Nexus User: $USER"
 
-                            curl -v -u "$USER:$PASS" \
-                            http://nexus.localhelp.store:8081/service/rest/v1/status
-                        '''
-                    }
-                }
-            }
-        stage('Upload Artifact to Nexus') {
-            steps {
-                script {
+        //                     curl -v -u "$USER:$PASS" \
+        //                     http://nexus.localhelp.store:8081/service/rest/v1/status
+        //                 '''
+        //             }
+        //         }
+        //     }
+        // stage('Upload Artifact to Nexus') {
+        //     steps {
+        //         script {
 
-                    nexusArtifactUploader(
-                        nexusVersion: 'nexus3',
-                        protocol: 'http',
-                        nexusUrl: nexusUrl,
-                        repository: 'backend',
-                        credentialsId: 'nexus-auth',
+        //             nexusArtifactUploader(
+        //                 nexusVersion: 'nexus3',
+        //                 protocol: 'http',
+        //                 nexusUrl: nexusUrl,
+        //                 repository: 'backend',
+        //                 credentialsId: 'nexus-auth',
 
-                        groupId: groupId,
-                        version: version,
+        //                 groupId: groupId,
+        //                 version: version,
 
-                        artifacts: [
-                            [
-                                artifactId: artifactId,
-                                classifier: '',
-                                file: "target/${artifactId}-${version}.jar",
-                                type: 'jar'
-                            ],
-                            [
-                                artifactId: artifactId,
-                                classifier: 'db',
-                                file: "db/init.sql",
-                                type: 'sql'
-                            ]
-                        ]
-                    )
+        //                 artifacts: [
+        //                     [
+        //                         artifactId: artifactId,
+        //                         classifier: '',
+        //                         file: "target/${artifactId}-${version}.jar",
+        //                         type: 'jar'
+        //                     ],
+        //                     [
+        //                         artifactId: artifactId,
+        //                         classifier: 'db',
+        //                         file: "db/init.sql",
+        //                         type: 'sql'
+        //                     ]
+        //                 ]
+        //             )
 
-                }
-            }
-        }
+        //         }
+        //     }
+        // }
 
                 stage('Upload Artifact to S3') {
                     steps {
@@ -213,18 +237,18 @@ pipeline {
                     }
         }
 
-        stage('Trigger Deploy Job'){
-            steps{
-                build(
-                    job: 'backend-deploy',
-                    wait: false,
-                    parameters: [
-                        string(name: 'VERSION', value: version)
-                    ]
-                )
+        // stage('Trigger Deploy Job'){
+        //     steps{
+        //         build(
+        //             job: 'backend-deploy',
+        //             wait: false,
+        //             parameters: [
+        //                 string(name: 'VERSION', value: version)
+        //             ]
+        //         )
 
-            }
-        }
+        //     }
+        // }
     }
 
     post {

@@ -1,0 +1,37 @@
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+  name: backend
+  namespace: localhelp
+  labels:
+    app: backend
+    purpose: deployment
+    tier: backend-app
+    project: localhelp
+
+spec:
+  replicas: {{ .Values.deployment.replicas }}
+
+  selector:
+    matchLabels:
+     app: backend
+     purpose: deployment
+     tier: backend-app
+     project: localhelp
+
+  template:
+    metadata:
+      labels:
+        app: backend
+        purpose: deployment
+        tier: backend-app
+        project: localhelp
+     
+    spec:
+      containers:
+       - name: backend
+         image: {{ .Values.deployment.image }}:{{ .Values.deployment.imageVersion }}
+         envFrom: 
+          - configMapRef:
+             name: backend

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend
+  namespace: localhelp
+data:
+  DB_HOST: db-dev.localhelp.store # this is mysql component service name
