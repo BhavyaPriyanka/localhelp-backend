@@ -94,6 +94,8 @@ pipeline {
                 echo "========= Authenticate to K8 ============"
                 aws eks update-kubeconfig --region us-east-1  --name localhelp-dev
 
+                export KUBECONFIG=/home/ec2-user/.kube/config
+
                  kubectl get nodes
 
                 echo "========= Deploy Backend using Helm ============"
