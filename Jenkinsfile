@@ -15,6 +15,8 @@ pipeline {
 
     environment {
         nexusUrl = 'nexus.localhelp.store:8081'
+        account_id = '837206354502'
+        region = 'us-east-1'
     }
 
     stages {
@@ -61,15 +63,26 @@ pipeline {
             }
         }
 
-        stage('Docker Build'){
+        stage('Docker Build and Push to ECR'){
             steps{
                 sh """
-                     echo "===== BUILDING DOCKER IMAGE ====="
 
-                      docker build -t sbp828/backend:${version} .
+                      echo "===== LOGIN TO ECR ====="
+
+                        aws ecr get-login-password --region ${region} | \
+                        docker login --username AWS --password-stdin \
+                        ${account_id}.dkr.ecr.${region}.amazonaws.com
+
+
+                      echo "===== BUILDING DOCKER IMAGE ====="
+
+                      docker build -t ${account_id}.dkr.ecr.us-east-1.amazonaws.com/localhelp-backend:${version} .
 
                       echo "===== DOCKER IMAGE CREATED ====="
                          docker images | grep sbp828/backend
+
+                      echo "===== PUSING IMAGE TO ECR  ====="
+                        docker push ${account_id}.dkr.ecr.us-east-1.amazonaws.com/localhelp-backend:${version}
                 """
             }
         }
