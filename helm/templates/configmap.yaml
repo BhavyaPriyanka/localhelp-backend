@@ -1,9 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
+
 metadata:
   name: backend
   namespace: localhelp
+
 data:
-  DB_HOST: db-dev.localhelp.store # this is rds component service name
+  DB_HOST: db-dev.localhelp.store
   DB_PORT: "3306"
   DB_NAME: appdb

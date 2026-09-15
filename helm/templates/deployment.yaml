@@ -59,7 +59,6 @@ spec:
 
             - secretRef:
                 name: backend-db
-
           resources:
             requests:
               cpu: "100m"
