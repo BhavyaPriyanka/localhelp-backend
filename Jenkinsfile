@@ -66,7 +66,7 @@ pipeline {
                 sh """
                      echo "===== BUILDING DOCKER IMAGE ====="
 
-                      docker build -t sbp828/backend:${version} 
+                      docker build -t sbp828/backend:${version} .
 
                       echo "===== DOCKER IMAGE CREATED ====="
                          docker images | grep sbp828/backend
