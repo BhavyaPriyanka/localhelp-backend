@@ -62,6 +62,8 @@ SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     "/",
     "/error",
     "/health",
+    "/actuator/health/**",
+    "/actuator/health"
     "/auth/login",
     "/auth/logout"
 ).permitAll()
