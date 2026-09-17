@@ -1,7 +1,7 @@
 DROP DATABASE IF EXISTS appdb;
 CREATE DATABASE appdb;
 USE appdb;
-UPDATE users
+
 SET password='ADMIN_HASH_HERE'
 WHERE username='admin';
 
