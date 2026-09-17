@@ -22,72 +22,31 @@ pipeline {
     stages {
 
         stage('Install Dependencies') {
-            steps {
-                sh '''
-                    mvn dependency:resolve
-                    ls -la ~/.m2
-                '''
-            }
-        }
+    steps {
+        sh '''
+            mvn dependency:resolve
+            ls -la ~/.m2
+        '''
+    }
+}
 
-        stage('Read Maven Information') {
-            steps {
-                script {
-                    version = sh(
-                        script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout",
-                        returnStdout: true
-                    ).trim()
-
-                    artifactId = sh(
-                        script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout",
-                        returnStdout: true
-                    ).trim()
-
-                    groupId = sh(
-                        script: "mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout",
-                        returnStdout: true
-                    ).trim()
-
-                    echo "Group Id    : ${groupId}"
-                    echo "Artifact Id : ${artifactId}"
-                    echo "Maven Version: ${version}"
-                }
-            }
-        }
-
-        stage('Get Git Release Version') {
-            steps {
-                script {
-                    def gitTag = sh(
-                        script: "git describe --tags --exact-match 2>/dev/null || true",
-                        returnStdout: true
-                    ).trim()
-
-                    if (!gitTag) {
-                        error("Build must be triggered from a Git tag, e.g. v1.9.0")
-                    }
-
-                    version = gitTag.replaceFirst(/^v/, '')
-
-                    echo "===== GIT RELEASE VERSION ====="
-                    echo "Git Tag : ${gitTag}"
-                    echo "Version : ${version}"
-                }
-            }
-        }
-
-        stage('Set Maven Version') {
+stage('Set Maven Version from Git Tag') {
     steps {
         script {
             def gitTag = sh(
-                script: "git describe --tags --exact-match",
+                script: "git describe --tags --exact-match 2>/dev/null || true",
                 returnStdout: true
             ).trim()
 
+            if (!gitTag) {
+                error("Build must be triggered from a Git tag, e.g. v1.9.0")
+            }
+
             version = gitTag.replaceFirst(/^v/, '')
 
-            echo "Git Tag      : ${gitTag}"
-            echo "Release Version : ${version}"
+            echo "===== GIT RELEASE VERSION ====="
+            echo "Git Tag : ${gitTag}"
+            echo "Version : ${version}"
 
             sh """
                 mvn versions:set \
@@ -97,6 +56,39 @@ pipeline {
 
             echo "POM version updated to ${version}"
         }
+    }
+}
+
+stage('Read Maven Information') {
+    steps {
+        script {
+            artifactId = sh(
+                script: "mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout",
+                returnStdout: true
+            ).trim()
+
+            groupId = sh(
+                script: "mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout",
+                returnStdout: true
+            ).trim()
+
+            echo "Group Id     : ${groupId}"
+            echo "Artifact Id  : ${artifactId}"
+            echo "Maven Version: ${version}"
+        }
+    }
+}
+
+stage('Build') {
+    steps {
+        sh '''
+            echo "===== BUILDING APPLICATION ====="
+
+            mvn -q clean package -DskipTests
+
+            echo "===== GENERATED ARTIFACT ====="
+            ls -ltr target
+        '''
     }
 }
 
