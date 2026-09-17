@@ -76,6 +76,30 @@ pipeline {
             }
         }
 
+        stage('Set Maven Version') {
+    steps {
+        script {
+            def gitTag = sh(
+                script: "git describe --tags --exact-match",
+                returnStdout: true
+            ).trim()
+
+            version = gitTag.replaceFirst(/^v/, '')
+
+            echo "Git Tag      : ${gitTag}"
+            echo "Release Version : ${version}"
+
+            sh """
+                mvn versions:set \
+                  -DnewVersion=${version} \
+                  -DgenerateBackupPoms=false
+            """
+
+            echo "POM version updated to ${version}"
+        }
+    }
+}
+
         stage('Build') {
             steps {
                 sh '''
