@@ -120,75 +120,87 @@ stage('Read Maven Information') {
         }
 
         stage('Deploy to K8') {
-            steps {
-                sh """
-                    set -e
+    steps {
+        sh """
+            set -e
 
-                    echo "========= Authenticate to K8 ============"
+            echo "========= Copy Helm Chart to Bastion =========="
 
-                    aws eks update-kubeconfig \
-                      --region ${region} \
-                      --name localhelp-dev
+            rm -rf /tmp/backend-helm
 
-                    export KUBECONFIG=/home/ec2-user/.kube/config
+            scp -i /home/ec2-user/.ssh/jenkins_bastion \
+              -o StrictHostKeyChecking=no \
+              -r helm \
+              ec2-user@10.0.1.109:/tmp/backend-helm
 
-                    echo "========= Check Kubernetes Nodes =========="
+            echo "========= Deploy Backend to EKS =========="
 
-                    kubectl get nodes
+            ssh -i /home/ec2-user/.ssh/jenkins_bastion \
+              -o StrictHostKeyChecking=no \
+              ec2-user@10.0.1.109 \
+              "VERSION='${version}' bash -s" <<'REMOTE_SCRIPT'
 
-                    echo "========= Deploy Backend using Helm =========="
+                set -e
 
-                    cd helm
+                echo "========= Check Kubernetes Nodes =========="
 
-                    sed -i 's/IMAGE_VERSION/${version}/g' values.yaml
+                kubectl get nodes
 
-                    echo "========= Helm Upgrade / Install =========="
+                echo "========= Set Image Version =========="
 
-                    helm upgrade --install backend . \
-                      --namespace localhelp \
-                      --create-namespace
+                cd /tmp/backend-helm
 
-                    echo "========= Helm Release =========="
+                sed -i "s/IMAGE_VERSION/\${VERSION}/g" values.yaml
 
-                    helm status backend \
-                      --namespace localhelp
+                echo "========= Helm Upgrade / Install =========="
 
-                    echo "========= CHECK NAMESPACE =========="
+                helm upgrade --install backend . \\
+                  --namespace localhelp \\
+                  --create-namespace
 
-                    kubectl get ns
+                echo "========= Helm Release =========="
 
-                    echo "========= CHECK DEPLOYMENT =========="
+                helm status backend \\
+                  --namespace localhelp
 
-                    kubectl get deployment backend \
-                      -n localhelp
+                echo "========= CHECK NAMESPACE =========="
 
-                    echo "========= CHECK PODS =========="
+                kubectl get ns
 
-                    kubectl get pods \
-                      -n localhelp \
-                      -o wide
+                echo "========= CHECK DEPLOYMENT =========="
 
-                    echo "========= WAIT FOR ROLLOUT =========="
+                kubectl get deployment backend \\
+                  -n localhelp
 
-                    kubectl rollout status deployment/backend \
-                      -n localhelp \
-                      --timeout=180s
+                echo "========= CHECK PODS =========="
 
-                    echo "========= FINAL POD STATUS =========="
+                kubectl get pods \\
+                  -n localhelp \\
+                  -o wide
 
-                    kubectl get pods \
-                      -n localhelp \
-                      -o wide
+                echo "========= WAIT FOR ROLLOUT =========="
 
-                    echo "========= BACKEND SERVICE =========="
+                kubectl rollout status deployment/backend \\
+                  -n localhelp \\
+                  --timeout=180s
 
-                    kubectl get svc backend \
-                      -n localhelp
+                echo "========= FINAL POD STATUS =========="
 
-                    echo "========= DEPLOYMENT COMPLETE =========="
-                """
-            }
-        }
+                kubectl get pods \\
+                  -n localhelp \\
+                  -o wide
+
+                echo "========= BACKEND SERVICE =========="
+
+                kubectl get svc backend \\
+                  -n localhelp
+
+                echo "========= DEPLOYMENT COMPLETE =========="
+
+REMOTE_SCRIPT
+        """
+    }
+}
 
         stage('Upload Artifact to S3') {
             steps {

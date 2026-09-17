@@ -1,0 +1,55 @@
+[33mcommit 218e7b4da10f608842931d58246f7f2e165d5eaa[m[33m ([m[1;33mtag: [m[1;33mv1.9.0[m[33m)[m
+Author: sbp828 <surisettybhavya828@gmail.com>
+Date:   Tue Sep 15 17:17:57 2026 +0000
+
+    view
+
+[1mdiff --git a/helm/templates/configmap.yaml b/helm/templates/configmap.yaml[m
+[1mindex 2beb5fe..375b59a 100644[m
+[1m--- a/helm/templates/configmap.yaml[m
+[1m+++ b/helm/templates/configmap.yaml[m
+[36m@@ -1,9 +1,11 @@[m
+ apiVersion: v1[m
+ kind: ConfigMap[m
+[32m+[m[41m[m
+ metadata:[m
+   name: backend[m
+   namespace: localhelp[m
+[32m+[m[41m[m
+ data:[m
+[31m-  DB_HOST: db-dev.localhelp.store # this is rds component service name[m
+[32m+[m[32m  DB_HOST: db-dev.localhelp.store[m[41m[m
+   DB_PORT: "3306"[m
+   DB_NAME: appdb[m
+\ No newline at end of file[m
+[1mdiff --git a/helm/templates/deployment.yaml b/helm/templates/deployment.yaml[m
+[1mindex 5b132af..f73c7b5 100644[m
+[1m--- a/helm/templates/deployment.yaml[m
+[1m+++ b/helm/templates/deployment.yaml[m
+[36m@@ -59,7 +59,6 @@[m [mspec:[m
+ [m
+             - secretRef:[m
+                 name: backend-db[m
+[31m-[m
+           resources:[m
+             requests:[m
+               cpu: "100m"[m
+[1mdiff --git a/helm/templates/secret.yaml b/helm/templates/secret.yaml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..0798db4[m
+[1m--- /dev/null[m
+[1m+++ b/helm/templates/secret.yaml[m
+[36m@@ -0,0 +1,12 @@[m
+[32m+[m[32mapiVersion: v1[m[41m[m
+[32m+[m[32mkind: Secret[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mmetadata:[m[41m[m
+[32m+[m[32m  name: backend-db[m[41m[m
+[32m+[m[32m  namespace: localhelp[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mtype: Opaque[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32mstringData:[m[41m[m
+[32m+[m[32m  DB_USERNAME: appuser[m[41m[m
+[32m+[m[32m  DB_PASSWORD: LocalHelp@123[m
+\ No newline at end of file[m
