@@ -119,14 +119,17 @@ stage('Read Maven Information') {
             }
         }
 
-        stage('Deploy to K8') {
+stage('Deploy to K8') {
     steps {
         sh """
             set -e
 
             echo "========= Copy Helm Chart to Bastion =========="
 
-            rm -rf /tmp/backend-helm
+            ssh -i /home/ec2-user/.ssh/jenkins_bastion \
+              -o StrictHostKeyChecking=no \
+              ec2-user@10.0.1.109 \
+              'rm -rf /tmp/backend-helm'
 
             scp -i /home/ec2-user/.ssh/jenkins_bastion \
               -o StrictHostKeyChecking=no \
@@ -143,7 +146,6 @@ stage('Read Maven Information') {
                 set -e
 
                 echo "========= Check Kubernetes Nodes =========="
-
                 kubectl get nodes
 
                 echo "========= Set Image Version =========="
@@ -154,45 +156,41 @@ stage('Read Maven Information') {
 
                 echo "========= Helm Upgrade / Install =========="
 
-                helm upgrade --install backend . \\
-                  --namespace localhelp \\
+                helm upgrade --install backend . \
+                  --namespace localhelp \
                   --create-namespace
 
                 echo "========= Helm Release =========="
 
-                helm status backend \\
+                helm status backend \
                   --namespace localhelp
-
-                echo "========= CHECK NAMESPACE =========="
-
-                kubectl get ns
 
                 echo "========= CHECK DEPLOYMENT =========="
 
-                kubectl get deployment backend \\
+                kubectl get deployment backend \
                   -n localhelp
 
                 echo "========= CHECK PODS =========="
 
-                kubectl get pods \\
-                  -n localhelp \\
+                kubectl get pods \
+                  -n localhelp \
                   -o wide
 
                 echo "========= WAIT FOR ROLLOUT =========="
 
-                kubectl rollout status deployment/backend \\
-                  -n localhelp \\
+                kubectl rollout status deployment/backend \
+                  -n localhelp \
                   --timeout=180s
 
                 echo "========= FINAL POD STATUS =========="
 
-                kubectl get pods \\
-                  -n localhelp \\
+                kubectl get pods \
+                  -n localhelp \
                   -o wide
 
                 echo "========= BACKEND SERVICE =========="
 
-                kubectl get svc backend \\
+                kubectl get svc backend \
                   -n localhelp
 
                 echo "========= DEPLOYMENT COMPLETE =========="
