@@ -180,7 +180,7 @@ stage('Deploy to K8') {
 
                 kubectl rollout status deployment/backend \
                   -n localhelp \
-                  --timeout=180s
+                  --timeout=5m
 
                 echo "========= FINAL POD STATUS =========="
 

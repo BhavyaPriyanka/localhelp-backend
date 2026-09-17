@@ -9,6 +9,14 @@ UPDATE users
 SET password='USER_HASH_HERE'
 WHERE username='user';
 
+
+
+GRANT ALL PRIVILEGES ON appdb.* TO 'appuser'@'%';
+
+FLUSH PRIVILEGES;
+
+SHOW GRANTS FOR 'appuser'@'%';
+
 -- =========================
 -- USERS
 -- =========================
@@ -39,7 +47,13 @@ CREATE TABLE medicines (
 -- =========================
 CREATE TABLE orders (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    total_amount DOUBLE
+    total_amount DOUBLE,
+    status VARCHAR(255) NOT NULL DEFAULT 'PLACED',
+    user_id BIGINT NULL,
+
+    CONSTRAINT fk_orders_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
 );
 
 -- =========================
