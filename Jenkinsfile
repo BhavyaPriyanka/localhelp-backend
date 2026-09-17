@@ -21,7 +21,7 @@ pipeline {
     stages {
 
         stage('Install Dependencies') {
-    steps {
+            steps {
         sh '''
             mvn dependency:resolve
             ls -la ~/.m2
@@ -78,18 +78,7 @@ stage('Read Maven Information') {
     }
 }
 
-stage('Build') {
-    steps {
-        sh '''
-            echo "===== BUILDING APPLICATION ====="
 
-            mvn -q clean package -DskipTests
-
-            echo "===== GENERATED ARTIFACT ====="
-            ls -ltr target
-        '''
-    }
-}
 
         stage('Build') {
             steps {
