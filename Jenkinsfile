@@ -1,4 +1,3 @@
-def pom
 def version
 def artifactId
 def groupId
