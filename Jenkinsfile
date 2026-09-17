@@ -51,41 +51,59 @@ pipeline {
     }
 }
 
-        stage('Build') {
-            steps {
-                sh '''
-                    echo "===== BUILDING APPLICATION ====="
-                    mvn -q clean package -DskipTests
+      stage('Build') {
+    steps {
+        script {
+            def version = sh(
+                script: "git describe --tags --exact-match 2>/dev/null || true",
+                returnStdout: true
+            ).trim()
 
-                    echo "===== GENERATED ARTIFACT ====="
-                    ls -ltr target
-                '''
+            if (!version) {
+                error("Build must be triggered from a Git tag, e.g. v1.9.0")
             }
+
+            env.VERSION = version.replaceFirst(/^v/, '')
+
+            echo "===== RELEASE VERSION: ${env.VERSION} ====="
         }
 
-        stage('Docker Build and Push to ECR'){
-            steps{
-                sh """
+        sh '''
+            echo "===== BUILDING APPLICATION ====="
 
-                      echo "===== LOGIN TO ECR ====="
+            mvn -q clean package -DskipTests
 
-                        aws ecr get-login-password --region ${region} | \
-                        docker login --username AWS --password-stdin \
-                        ${account_id}.dkr.ecr.${region}.amazonaws.com
+            echo "===== GENERATED ARTIFACT ====="
+            ls -ltr target
+        '''
+    }
+}
 
+        stage('Docker Build and Push to ECR') {
+    steps {
+        sh """
+            echo "===== LOGIN TO ECR ====="
 
-                      echo "===== BUILDING DOCKER IMAGE ====="
+            aws ecr get-login-password --region ${region} | \
+            docker login --username AWS --password-stdin \
+            ${account_id}.dkr.ecr.${region}.amazonaws.com
 
-                      docker build -t ${account_id}.dkr.ecr.us-east-1.amazonaws.com/localhelp-backend:${version} .
+            echo "===== BUILDING DOCKER IMAGE ====="
 
-                      echo "===== DOCKER IMAGE CREATED ====="
-                         docker images | grep sbp828/backend
+            docker build \
+              -t ${account_id}.dkr.ecr.${region}.amazonaws.com/localhelp-backend:${VERSION} .
 
-                      echo "===== PUSING IMAGE TO ECR  ====="
-                        docker push ${account_id}.dkr.ecr.us-east-1.amazonaws.com/localhelp-backend:${version}
-                """
-            }
-        }
+            echo "===== DOCKER IMAGE CREATED ====="
+
+            docker images | grep localhelp-backend
+
+            echo "===== PUSHING IMAGE TO ECR ====="
+
+            docker push \
+              ${account_id}.dkr.ecr.${region}.amazonaws.com/localhelp-backend:${VERSION}
+        """
+    }
+}
 
 
         stage('Deploy to K8') {
