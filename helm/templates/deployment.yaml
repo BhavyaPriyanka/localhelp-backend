@@ -57,7 +57,7 @@ spec:
 
       containers:
         - name: backend
-          imagePullPolicy: always
+          imagePullPolicy: IfNotPresent
           image: {{ .Values.deployment.image }}:{{ .Values.deployment.imageVersion }}
 
           envFrom:
